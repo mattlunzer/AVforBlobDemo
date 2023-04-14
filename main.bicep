@@ -29,7 +29,7 @@ param runtime string = 'powershell'
 param eventGridTopicName string = 'avforblobtopic${uniqueString(resourceGroup().id)}'
 
 // log analytics
-param logAnalyticsName string = 'avforbloblogs'
+param logAnalyticsName string = 'avforbloblogs${uniqueString(resourceGroup().id)}'
 
 var functionAppName = appName
 var hostingPlanName = appName
