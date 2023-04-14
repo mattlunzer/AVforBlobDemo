@@ -148,3 +148,152 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
     }
   }
 }
+
+//set vm size
+param vmSize string = 'Standard_D2s_v3' //for complete list --> az vm list-sizes --location "eastus" -o table
+
+//network
+param vnetName string = 'vnet-${uniqueString(subscription().id, resourceGroup().id)}'
+param nsgName string = 'nsg-${uniqueString(subscription().id, resourceGroup().id)}'
+
+//vm1
+param vmName string = 'vm1${uniqueString(resourceGroup().id)}'
+param publicIPAddressName string = 'vm1-pip'
+param nicName string = 'vm1-nic'
+param UN string = 'azureadmin'
+
+var vmNamePre = substring(vmName, 0, 14)
+
+//supply during deployment
+@secure()
+param Pass string
+
+//nsg
+resource nsg 'Microsoft.Network/networkSecurityGroups@2020-06-01' = {
+  name: nsgName
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'SSH'
+        properties: {
+          priority: 1000
+          protocol: 'Tcp'
+          access: 'Allow'
+          direction: 'Inbound'
+          sourceAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationAddressPrefix: '*'
+          destinationPortRange: '3389'
+        }
+      }
+    ]
+  }
+}
+
+//deploy vnet
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
+  name: vnetName
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.0.0.0/16'
+      ]
+    }
+    subnets: [
+      {
+        name: 'vmSubnet'
+        properties: {
+          addressPrefix: '10.0.0.0/24'
+          networkSecurityGroup: {
+            id: nsg.id
+          }
+        }
+      }
+      {
+        name: 'AzureBastionSubnet'
+        properties: {
+          addressPrefix: '10.0.1.0/24'
+        }
+      }
+    ]
+  }
+}
+
+//public ip
+resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
+  name: publicIPAddressName
+  location: location
+    sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+    dnsSettings: {
+      domainNameLabel: vmNamePre
+    }
+  }
+  zones: [
+    '1'
+  ]
+}
+
+//nic
+resource networkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
+  name: nicName
+  location: location
+  properties: {
+    enableAcceleratedNetworking: true
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: '${virtualNetwork.id}/subnets/${'vmSubnet'}'
+          }
+          publicIPAddress: {
+            id: publicIPAddress.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
+  name: vmNamePre
+  location: location
+  properties: {
+    hardwareProfile: {
+      vmSize: vmSize
+    }
+    osProfile: {
+      computerName: vmNamePre
+      adminUsername: UN
+      adminPassword: Pass
+    }
+    storageProfile: {
+      imageReference: {
+        publisher: 'MicrosoftWindowsServer'
+        offer: 'WindowsServer'
+        sku: '2019-datacenter-gensecond'
+        version: 'latest'
+      }
+      osDisk: {
+        createOption: 'FromImage'
+        managedDisk: {
+          storageAccountType: 'Premium_LRS'
+        }
+      }
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: networkInterface.id
+        }
+      ]
+    }
+  }
+}

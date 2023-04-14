@@ -1,7 +1,7 @@
 param($eventGridEvent, $TriggerMetadata)
 
 # Make sure to pass hashtables to Out-String so they're logged correctly
-$eventGridEvent | Out-String | param($eventGridEvent, $TriggerMetadata)
+#$eventGridEvent | Out-String | param($eventGridEvent, $TriggerMetadata)
 
 # Make sure to pass hashtables to Out-String so they're logged correctly
 $eventGridEvent | ConvertTo-JSON | Out-String | Write-Host
