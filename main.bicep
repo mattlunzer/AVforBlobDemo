@@ -26,15 +26,15 @@ param appInsightsLocation string = resourceGroup().location
 param runtime string = 'powershell'
 
 // event grid params
-param eventGridTopicName string = 'avforblobtopic${uniqueString(resourceGroup().id)}'
+param eventGridTopicName string = 'egtopic${uniqueString(resourceGroup().id)}'
 
 // log analytics
-param logAnalyticsName string = 'avforbloblogs${uniqueString(resourceGroup().id)}'
+param logAnalyticsName string = 'loganalytics${uniqueString(resourceGroup().id)}'
 
 var functionAppName = appName
 var hostingPlanName = appName
 var applicationInsightsName = appName
-var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
+var storageAccountName = 'stg${uniqueString(resourceGroup().id)}'
 var functionWorkerRuntime = runtime
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {

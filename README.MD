@@ -20,13 +20,12 @@
 
 (Event grid system topics --> https://learn.microsoft.com/en-us/azure/event-grid/system-topics)
 
-### Azure Functions
+### Azure Functions (needs improvement)
 3. Assign MI role assignment "storage blob data owner" to the resource group (https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/qs-configure-portal-windows-vm). Add your user account too.
-4. Create a new Function (https://learn.microsoft.com/en-us/azure/azure-functions/functions-create-function-app-portal)
-- Develop in portal
-- Azure event grid trigger
-5. copy maliciousBlobCopyDelete.ps1 to the function portal editor
-6. Edit function App files, uncomment # 'Az' = '9.* in requirements.psd1
+4. Create a powershell function in vscode (https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-vs-code-powershell)
+5. copy\paste quarantineFunction.ps1 from local git repo to run.ps1.
+6. Deploy to function app
+
 
 ### Configure Function as Event Grid Subscription
 7. Create Event Grid Subscdription
